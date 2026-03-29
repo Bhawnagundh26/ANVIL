@@ -1,44 +1,4 @@
-1. Install dependencies
-uv venv
-source .venv/bin/activate
-uv sync
-2. Configure environment
-Copy .env.example to .env and fill in:
-OPENROUTER_API_KEY (or whichever provider you're using)
-REGISTRY_USERNAME - your Docker Hub username
-REGISTRY_PASSWORD - a Docker Hub access token
-3. Authenticate services
-Make sure Docker is running locally, then:
-modal setup          # Modal account for sandboxed execution
-docker login         # Docker Hub for image pulls
-4. Create a private Docker Hub repository
-Go to hub.docker.com and create a new private repository (e.g., anvil-images).
-Public repos will not work—Anvil refuses to push task images to public repositories to prevent data leakage.
-Usage
-Publish task images
-Build and push Docker images for a dataset to your private repo:
 
-anvil publish-images --dataset datasets/file-utilization -u <dockerhub-username> --repo anvil-images
-Modal sandboxes pull images from Docker Hub, so task images need to be pushed there first.
-
-To remove local anvil images: docker rmi $(docker images <dockerhub-username>/anvil-images -q) --force
-
-Run evaluations
-Run an agent on all tasks and evaluate the patches:
-
-anvil run-evals \
-  --model openrouter/google/gemini-2.5-flash \
-  --dataset datasets/file-utilization \
-  --agent mini-swe-agent \
-  --dockerhub-username <dockerhub-username> \
-  --dockerhub-repo anvil-images \
-  --n-attempts 3
-Use --n-attempts to control how many runs per task (useful for pass@k metrics). Results are saved to <dataset>/runs/<agent>_<model>/.
-
-Progress is saved automatically to minimize costs. If you re-run the same command, completed tasks are skipped—nothing runs on Modal for those tasks. Use --no-continue to start fresh.
-
-Oracle Agent
-Use the oracle agent to validate your task harnesses before running LLM agents:
 
 # Oracle: applies gold patches - all tests should PASS
 anvil run-evals \
